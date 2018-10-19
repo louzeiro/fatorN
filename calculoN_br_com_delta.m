@@ -83,8 +83,7 @@
 -103	1885
 -102	1904
 ];
-  qtdAmostras= length (dadosMedidos);
-   
+   qtdAmostras= length (dadosMedidos);
    %% calculo da potencia recebida na distancia de referencia
    Pt=20000;                               %potencia em Watts
    Gt=16;                                  %ganho da Tx
@@ -100,10 +99,6 @@
  for i=1:qtdAmostras
     d(i,1)=dadosMedidos(i,2);    %% Distancia i 
     PR_di(i,1)=dadosMedidos(i,1);     %% Potencia recebida na distancia i,    
-    %if d(i,1)<d0                     %% Busca do menor valor da distancia
-    %  d0=d(i,1);                     %% Potencia recebida na referencia
-    %  PR_d0=PR_di(i,1);              %% distancia inicial
-    %endif
   endfor
   
   bp1=1290;
@@ -116,21 +111,24 @@
       PR_di_v1(j,1)=PR_di(i);
       j=j+1;
     else
-        d_v2(k,1)=d(i);
-        PR_di_v2(k,1)=PR_di(i);
-        k=k+1;
+      d_v2(k,1)=d(i);
+      PR_di_v2(k,1)=PR_di(i);
+      k=k+1;
     endif
   endfor
   
+  n=calcN(d_v1,PR_di_v1,d0,PR_d0);
   n1=2;%calcN(d_v1,PR_di_v1,d0,PR_d0);
   n2=2.3;%calcN(d_v2,PR_di_v2,bp1,PR_di_v1(1,1));
   
-  delta0=0;
-  delta1=(bp1/d0)**(n2-n1)
+  delta0=1;
+  delta1=(bp1/d0)**(n2-n1);
   pEstimada1=pEstimada_v2(n1,d_v1,d0,PR_d0,delta0);
   pEstimada2=pEstimada_v2(n2,d_v2,d0,PR_d0,delta1);
+  pEstimadaN=pEstimada_v2(n,d,d0,PR_d0,delta0);
   pEstimadaN1=pEstimada_v2(n1,d,d0,PR_d0,delta0);
   pEstimadaN2=pEstimada_v2(n2,d,d0,PR_d0,delta0);
+  
   j=k=1;
   for i=1:qtdAmostras
     if (d(i)<bp1) %breakPoint 1
@@ -142,9 +140,29 @@
      endif
   endfor
   
+  %adicionando d0 e PR_d0 nos veotres
   
+  dist(1)=d0;
+  potEstimada(1)=potRecebida(1)=potEstimadaN(1)=potEstimadaN1(1)=potEstimadaN2(1)=PR_d0;
+  
+   i=2
+   for j=1:qtdAmostras
+     dist(i)=d(j,1);
+     potRecebida(i)=PR_di(j);
+     potEstimada(i)=pEstimada(j);
+     potEstimadaN(i)=pEstimadaN(j);
+     potEstimadaN1(i)=pEstimadaN1(j);
+     potEstimadaN2(i)=pEstimadaN2(j);
+     i=i+1;
+   endfor
+ 
   figure 1
-  plot (d,pEstimada,"x;Potencia estimada;",d,PR_di,"x;Potencia Medida;",d,pEstimadaN1,"o:Potencia estimada com N1",d,pEstimadaN2, "o:Potencia estimada com N2");
+  plot (dist,potRecebida,"-k;Potencia Medida;");hold on;
+  plot (dist,potEstimada,"-r;Potencia estimada com BP;");hold on;
+  plot (dist,potEstimadaN2,"-g;Potencia estimada com N2;");hold on;
+  plot (dist,potEstimadaN1,"-b;Potencia estimada com N1;");hold on;
+  plot (dist,potEstimadaN, "-m;Potencia estimada com N;");hold on;
+  grid on;
   
   %plot (d, pEstimada, "-;Perda de percurso;", d, PR_di, "-r;Potencia Medida;");
 
